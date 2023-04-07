@@ -1,0 +1,18 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: cron-service
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "20000"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "20000"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "20000"
+spec:
+  rules:
+    - host: cron-service.simulation-platform-prod.simulation.deeproute.ai
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: cron-service
+              servicePort: 8081

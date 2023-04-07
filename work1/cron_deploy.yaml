@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cron-service
+  labels:
+    app: cron-service
+spec:
+  replicas: 4
+  revisionHistoryLimit: 0
+  selector:
+    matchLabels:
+      app: cron-service
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: "25%"
+      maxUnavailable: "25%"
+  template:
+    metadata:
+      name: cron-service
+      labels:
+        app: cron-service
+    spec:
+      nodeSelector:
+        web-server: "true"
+      tolerations:
+        - effect: NoSchedule
+          key: web-server
+          value: "true"
+      containers:
+        - name: cron-service
+          image: reg.deeproute.ai/deeproute-simulation-services/cron:v2.1
+          command: ["sh", -c]
+          args: [
+              "
+              export ops_config=production;
+              python3 manager.py runserver;
+              uwsgi --ini uwsgi.ini;
+              ",
+            ]
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: "app-port"
+              containerPort: 8081
+          resources:
+            limits:
+              memory: "2000Mi"
+              cpu: 1
+            requests:
+              memory: "100Mi"
+              cpu: 100m
